@@ -2,12 +2,7 @@ package com.digitboard.keyboard
 
 import android.content.Intent
 import android.inputmethodservice.InputMethodService
-import android.inputmethodservice.Keyboard
-import android.inputmethodservice.KeyboardView
-import android.os.Handler
-import android.os.Looper
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -19,7 +14,6 @@ class DigitBoardIME : InputMethodService() {
     private lateinit var feedback: AudioHapticFeedback
     private var isShifted = false
     private var isCapsLocked = false
-    private var currentTheme = "neumorphism"
 
     override fun onCreate() {
         super.onCreate()
@@ -27,42 +21,16 @@ class DigitBoardIME : InputMethodService() {
     }
 
     override fun onCreateInputView(): View {
-        val inflater = layoutInflater
-        val mainView = inflater.inflate(R.layout.activity_settings, null) // Dynamic Inflate or Custom Layout
-        val container = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setBackgroundColor(android.graphics.Color.parseColor("#e0e5ec"))
-        }
+        val view = layoutInflater.inflate(R.layout.keyboard_view, null)
+        val keysContainer = view.findViewById<LinearLayout>(R.id.keys_container)
+        val suggestionContainer = view.findViewById<LinearLayout>(R.id.suggestion_container)
 
-        // Suggestion Strip
-        val suggestionStrip = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(16, 12, 16, 12)
-            setBackgroundColor(android.graphics.Color.parseColor("#e0e5ec"))
-        }
+        // Populate initial suggestions
+        updateSuggestions(suggestionContainer, "")
 
-        val suggestions = SuggestionEngine.getSuggestions("")
-        suggestions.forEach { word ->
-            val sugTv = TextView(this).apply {
-                text = word
-                textSize = 14f
-                setPadding(24, 12, 24, 12)
-                setTextColor(android.graphics.Color.parseColor("#4d6bfe"))
-                setOnClickListener {
-                    currentInputConnection?.commitText("$word ", 1)
-                }
-            }
-            suggestionStrip.addView(sugTv)
-        }
-        container.addView(suggestionStrip)
-
-        // Custom Keyboard View rendering demo layout
-        val keyLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(8, 8, 8, 16)
-        }
-
+        // Build Keyboard Rows
         val rows = listOf(
+            listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"),
             listOf("q", "w", "e", "r", "t", "y", "u", "i", "o", "p"),
             listOf("a", "s", "d", "f", "g", "h", "j", "k", "l", "ç"),
             listOf("⇧", "z", "x", "c", "v", "b", "n", "m", "⌫"),
@@ -78,11 +46,11 @@ class DigitBoardIME : InputMethodService() {
             rowKeys.forEach { keyStr ->
                 val btn = Button(this).apply {
                     text = keyStr
-                    textSize = 16f
+                    textSize = 15f
                     setTextColor(android.graphics.Color.parseColor("#2d3436"))
                     setBackgroundResource(R.drawable.bg_neumorphic_button)
-                    val lp = LinearLayout.LayoutParams(0, 130, 1f).apply {
-                        setMargins(4, 4, 4, 4)
+                    val lp = LinearLayout.LayoutParams(0, 120, 1f).apply {
+                        setMargins(3, 3, 3, 3)
                     }
                     if (keyStr == "ESPAÇO") {
                         lp.weight = 3f
@@ -92,19 +60,43 @@ class DigitBoardIME : InputMethodService() {
                     setOnClickListener {
                         feedback.playClickSound()
                         feedback.triggerVibration()
-                        handleKeyInput(keyStr)
+                        handleKeyInput(keyStr, suggestionContainer)
                     }
                 }
                 rowView.addView(btn)
             }
-            keyLayout.addView(rowView)
+            keysContainer.addView(rowView)
         }
 
-        container.addView(keyLayout)
-        return container
+        return view
     }
 
-    private fun handleKeyInput(keyStr: String) {
+    private fun updateSuggestions(container: LinearLayout, inputWord: String) {
+        container.removeAllViews()
+        val suggestions = SuggestionEngine.getSuggestions(inputWord)
+        suggestions.forEach { word ->
+            val sugTv = TextView(this).apply {
+                text = word
+                textSize = 14f
+                setPadding(24, 10, 24, 10)
+                setTextColor(android.graphics.Color.parseColor("#4d6bfe"))
+                setBackgroundResource(R.drawable.bg_neumorphic_button)
+                val lp = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(0, 0, 12, 0)
+                }
+                layoutParams = lp
+                setOnClickListener {
+                    currentInputConnection?.commitText("$word ", 1)
+                }
+            }
+            container.addView(sugTv)
+        }
+    }
+
+    private fun handleKeyInput(keyStr: String, suggestionContainer: LinearLayout) {
         val ic = currentInputConnection ?: return
 
         when (keyStr) {
