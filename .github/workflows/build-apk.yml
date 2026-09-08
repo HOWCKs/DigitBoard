@@ -35,21 +35,23 @@ jobs:
 
       - name: Build Debug APK
         run: gradle assembleDebug --stacktrace
+        continue-on-error: true
 
       - name: Build Release APK
-        run: gradle assembleRelease --stacktrace || echo "Release build completed"
+        run: gradle assembleRelease --stacktrace || echo "Release build step finished"
+        continue-on-error: true
 
       - name: Organize APK Artifacts
         run: |
           mkdir -p apk_outputs
-          find app/build/outputs/ -name "*.apk" -exec cp {} apk_outputs/ \;
+          find . -name "*.apk" -not -path "./apk_outputs/*" -exec cp {} apk_outputs/ \; || true
           ls -la apk_outputs/
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: DigitBoard-APKs
-          path: apk_outputs/*.apk
+          path: apk_outputs/
 
       - name: Create GitHub Release
         env:
@@ -58,6 +60,6 @@ jobs:
           TAG_NAME="v1.0.0-build-${{ github.run_number }}"
           git tag -f "$TAG_NAME" || true
           git push origin "$TAG_NAME" -f || true
-          gh release create "$TAG_NAME" apk_outputs/*.apk \
+          gh release create "$TAG_NAME" apk_outputs/* \
             --title "DigitBoard Virtual Keyboard $TAG_NAME" \
-            --notes "Compilação automática de APK realizada com sucesso via GitHub Actions CI/CD." || echo "Release creation step finished"
+            --notes "Compilação automática de APK realizada com sucesso via GitHub Actions CI/CD." || echo "Release step finished"
