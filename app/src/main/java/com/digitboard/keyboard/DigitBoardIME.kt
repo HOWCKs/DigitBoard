@@ -2,6 +2,7 @@ package com.digitboard.keyboard
 
 import android.content.Intent
 import android.inputmethodservice.InputMethodService
+import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -103,9 +104,9 @@ class DigitBoardIME : InputMethodService() {
         val ic = currentInputConnection ?: return
 
         when (keyStr) {
-            "⌫" -> ic.deleteSurroundingText(1, 0)
+            "⌫" -> sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL)
             "ESPAÇO" -> ic.commitText(" ", 1)
-            "↵" -> ic.sendKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_ENTER))
+            "↵" -> sendDownUpKeyEvents(KeyEvent.KEYCODE_ENTER)
             "⇧" -> {
                 isShifted = !isShifted
             }
