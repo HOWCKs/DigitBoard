@@ -25,10 +25,10 @@ class DigitBoardIME : InputMethodService() {
         val keysContainer = view.findViewById<LinearLayout>(R.id.keys_container)
         val suggestionContainer = view.findViewById<LinearLayout>(R.id.suggestion_container)
 
-        // Populate initial suggestions
-        updateSuggestions(suggestionContainer, "")
+        if (suggestionContainer != null) {
+            updateSuggestions(suggestionContainer, "")
+        }
 
-        // Build Keyboard Rows
         val rows = listOf(
             listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"),
             listOf("q", "w", "e", "r", "t", "y", "u", "i", "o", "p"),
@@ -37,41 +37,44 @@ class DigitBoardIME : InputMethodService() {
             listOf("?123", "😊", "🎙️", "ESPAÇO", ".", "↵")
         )
 
-        rows.forEach { rowKeys ->
-            val rowView = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                weightSum = rowKeys.size.toFloat()
-            }
-
-            rowKeys.forEach { keyStr ->
-                val btn = Button(this).apply {
-                    text = keyStr
-                    textSize = 15f
-                    setTextColor(android.graphics.Color.parseColor("#2d3436"))
-                    setBackgroundResource(R.drawable.bg_neumorphic_button)
-                    val lp = LinearLayout.LayoutParams(0, 120, 1f).apply {
-                        setMargins(3, 3, 3, 3)
-                    }
-                    if (keyStr == "ESPAÇO") {
-                        lp.weight = 3f
-                    }
-                    layoutParams = lp
-
-                    setOnClickListener {
-                        feedback.playClickSound()
-                        feedback.triggerVibration()
-                        handleKeyInput(keyStr, suggestionContainer)
-                    }
+        keysContainer?.let { container ->
+            rows.forEach { rowKeys ->
+                val rowView = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    weightSum = rowKeys.size.toFloat()
                 }
-                rowView.addView(btn)
+
+                rowKeys.forEach { keyStr ->
+                    val btn = Button(this).apply {
+                        text = keyStr
+                        textSize = 15f
+                        setTextColor(android.graphics.Color.parseColor("#2d3436"))
+                        setBackgroundResource(R.drawable.bg_neumorphic_button)
+                        val lp = LinearLayout.LayoutParams(0, 120, 1f).apply {
+                            setMargins(3, 3, 3, 3)
+                        }
+                        if (keyStr == "ESPAÇO") {
+                            lp.weight = 3f
+                        }
+                        layoutParams = lp
+
+                        setOnClickListener {
+                            feedback.playClickSound()
+                            feedback.triggerVibration()
+                            handleKeyInput(keyStr, suggestionContainer)
+                        }
+                    }
+                    rowView.addView(btn)
+                }
+                container.addView(rowView)
             }
-            keysContainer.addView(rowView)
         }
 
         return view
     }
 
-    private fun updateSuggestions(container: LinearLayout, inputWord: String) {
+    private fun updateSuggestions(container: LinearLayout?, inputWord: String) {
+        if (container == null) return
         container.removeAllViews()
         val suggestions = SuggestionEngine.getSuggestions(inputWord)
         suggestions.forEach { word ->
@@ -96,7 +99,7 @@ class DigitBoardIME : InputMethodService() {
         }
     }
 
-    private fun handleKeyInput(keyStr: String, suggestionContainer: LinearLayout) {
+    private fun handleKeyInput(keyStr: String, suggestionContainer: LinearLayout?) {
         val ic = currentInputConnection ?: return
 
         when (keyStr) {
