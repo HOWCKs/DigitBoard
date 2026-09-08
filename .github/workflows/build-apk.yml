@@ -25,20 +25,16 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup Gradle
+      - name: Setup Gradle 8.2
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.2
-
-      - name: Grant Execute Permission
-        run: chmod +x gradlew
+        with:
+          gradle-version: '8.2'
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace || echo "Release build step finished"
+        run: gradle assembleRelease --stacktrace || echo "Release build step finished"
 
       - name: Organize APK Artifacts
         run: |
