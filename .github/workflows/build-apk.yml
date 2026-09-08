@@ -22,17 +22,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.2
-
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x gradlew
-
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --info
+        run: gradle assembleDebug --stacktrace
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace || echo "Release build step finished"
+        run: gradle assembleRelease --stacktrace || echo "Release build step finished"
 
       - name: Organize APK Artifacts
         run: |

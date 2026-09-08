@@ -6,8 +6,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
-import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -22,17 +20,17 @@ class SettingsActivity : AppCompatActivity() {
         val btnSelect = findViewById<Button>(R.id.btn_select_ime)
         val rgThemes = findViewById<RadioGroup>(R.id.rg_themes)
 
-        btnEnable.setOnClickListener {
+        btnEnable?.setOnClickListener {
             val intent = Intent(Settings.ACTION_INPUT_METHOD_SETTINGS)
             startActivity(intent)
         }
 
-        btnSelect.setOnClickListener {
+        btnSelect?.setOnClickListener {
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showInputMethodPicker()
         }
 
-        rgThemes.setOnCheckedChangeListener { _, checkedId ->
+        rgThemes?.setOnCheckedChangeListener { _, checkedId ->
             val themeName = when (checkedId) {
                 R.id.rb_theme_neu -> "Neumorphism"
                 R.id.rb_theme_amoled -> "Escuro AMOLED"
