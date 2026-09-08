@@ -44,8 +44,7 @@ jobs:
       - name: Organize APK Artifacts
         run: |
           mkdir -p apk_outputs
-          find app/build/outputs/ -name "*.apk" -exec cp {} apk_outputs/ \; || true
-          find . -name "*.apk" -not -path "./apk_outputs/*" -exec cp {} apk_outputs/ \; || true
+          find . -name "*.apk" -not -path "*/apk_outputs/*" -exec cp -v {} apk_outputs/ \; || true
           ls -la apk_outputs/
 
       - name: Upload APK Artifacts
