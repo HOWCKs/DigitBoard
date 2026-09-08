@@ -54,9 +54,18 @@ O **DigitBoard** é um teclado virtual completo desenvolvido para Android, proje
 O repositório está configurado com **GitHub Actions** para compilar o código Kotlin nativo e gerar o arquivo APK automaticamente a cada commit ou por acionamento manual.
 
 1. Acesse a aba **[Actions](../../actions)** no topo do repositório.
-2. Selecione a última execução do workflow **Build DigitBoard APK CI/CD**.
+2. Selecione a última execução do workflow **Build DigitBoard APK**.
 3. Na seção **Artifacts**, clique em `DigitBoard-APKs` para baixar o arquivo ZIP contendo os APKs.
 4. Alternativamente, acesse a aba **[Releases](../../releases)** para baixar a versão mais recente diretamente para o seu dispositivo Android.
+
+Cada build publica dois arquivos:
+
+| Arquivo | Descrição |
+| --- | --- |
+| `DigitBoard-<versão>-debug.apk` | Build de depuração, assinado com a keystore padrão do Android. |
+| `DigitBoard-<versão>-release.apk` | Build de release (minificação desativada), assinado com a keystore padrão para instalação direta. |
+
+> Para instalar no celular: baixe o APK, permita "Instalar apps desconhecidos" para o navegador/app de arquivos e toque no arquivo. Depois, abra o app **DigitBoard** e siga os passos 1 e 2 para ativar o teclado e escolhê-lo como padrão.
 
 ---
 
@@ -80,8 +89,9 @@ Abra a URL de preview gerada no navegador para testar interativamente todos os 4
 DigitBoard/
 ├── .github/workflows/
 │   └── build-apk.yml               # Workflow do GitHub Actions para compilação do APK
+├── gradlew / gradlew.bat           # Gradle Wrapper 8.2 (usado pelo CI e localmente)
 ├── app/
-│   ├── build.gradle.kts            # Configuração Gradle do módulo Android
+│   ├── build.gradle                # Configuração Gradle do módulo Android
 │   └── src/main/
 │       ├── AndroidManifest.xml     # Registro do InputMethodService e Activity de Configurações
 │       ├── java/com/digitboard/keyboard/
