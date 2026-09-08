@@ -31,10 +31,10 @@ jobs:
           gradle-version: '8.2'
 
       - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace
+        run: gradle :app:assembleDebug --stacktrace
 
       - name: Build Release APK
-        run: gradle assembleRelease --stacktrace || echo "Release build step finished"
+        run: gradle :app:assembleRelease --stacktrace || echo "Release build step finished"
 
       - name: Organize APK Artifacts
         run: |
