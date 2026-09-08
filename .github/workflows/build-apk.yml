@@ -80,7 +80,7 @@ jobs:
           find app/build/outputs/apk -type f -name '*.apk' -print | sort
           cp app/build/outputs/apk/debug/app-debug.apk "apk_outputs/DigitBoard-${VERSION}-debug.apk"
           RELEASE_APK="$(find app/build/outputs/apk/release -type f -name '*.apk' | head -1)"
-          cp "$RELEASE_APK" "apk_outputs/DigitBoard-${VERSION}-release-unsigned.apk"
+          cp "$RELEASE_APK" "apk_outputs/DigitBoard-${VERSION}-release.apk"
           echo "--- apk_outputs ---"
           ls -la apk_outputs
 
@@ -88,7 +88,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s apk_outputs/*-debug.apk || { echo "::error::Debug APK is missing or empty"; exit 1; }
-          test -s apk_outputs/*-release-unsigned.apk || { echo "::error::Release APK is missing or empty"; exit 1; }
+          test -s apk_outputs/*-release.apk || { echo "::error::Release APK is missing or empty"; exit 1; }
           echo "Both APKs were generated successfully."
 
       - name: Upload APK Artifacts
@@ -98,35 +98,6 @@ jobs:
           path: apk_outputs/*
           if-no-files-found: error
           retention-days: 30
-
-      - name: Publish APKs to apk-builds branch
-        if: always()
-        run: |
-          if [ ! -d apk_outputs ] || [ -z "$(ls -A apk_outputs)" ]; then
-            echo "No APK to publish"
-            exit 0
-          fi
-          mkdir -p apk
-          cp apk_outputs/*.apk apk/
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B apk-builds
-          git add -f apk
-          git commit -m "APKs for run ${{ github.run_number }}"
-          git push -f origin apk-builds
-
-      - name: Publish build logs (debug aid)
-        if: always()
-        run: |
-          mkdir -p ci-logs
-          cp build-debug.log ci-logs/ 2>/dev/null || true
-          cp build-release.log ci-logs/ 2>/dev/null || true
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B ci-logs
-          git add -f ci-logs || true
-          git commit -m "ci logs for run ${{ github.run_number }}" || exit 0
-          git push -f origin ci-logs
 
       - name: Create GitHub Release
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
