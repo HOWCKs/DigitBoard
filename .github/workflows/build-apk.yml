@@ -61,10 +61,14 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace --no-daemon
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebug --stacktrace --no-daemon 2>&1 | tee build-debug.log
 
       - name: Build Release APK
-        run: ./gradlew :app:assembleRelease --stacktrace --no-daemon
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleRelease --stacktrace --no-daemon 2>&1 | tee build-release.log
 
       - name: Collect APKs
         run: |
@@ -94,6 +98,19 @@ jobs:
           path: apk_outputs/*
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish build logs (debug aid)
+        if: always()
+        run: |
+          mkdir -p ci-logs
+          cp build-debug.log ci-logs/ 2>/dev/null || true
+          cp build-release.log ci-logs/ 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B ci-logs
+          git add -f ci-logs || true
+          git commit -m "ci logs for run ${{ github.run_number }}" || exit 0
+          git push -f origin ci-logs
 
       - name: Create GitHub Release
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
