@@ -99,6 +99,22 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Publish APKs to apk-builds branch
+        if: always()
+        run: |
+          if [ ! -d apk_outputs ] || [ -z "$(ls -A apk_outputs)" ]; then
+            echo "No APK to publish"
+            exit 0
+          fi
+          mkdir -p apk
+          cp apk_outputs/*.apk apk/
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B apk-builds
+          git add -f apk
+          git commit -m "APKs for run ${{ github.run_number }}"
+          git push -f origin apk-builds
+
       - name: Publish build logs (debug aid)
         if: always()
         run: |
