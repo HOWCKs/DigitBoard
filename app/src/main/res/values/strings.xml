@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DigitBoard</string>
+    <string name="ime_name">DigitBoard Keyboard</string>
+    <string name="subtype_pt_br">Português (Brasil)</string>
+    <string name="subtype_en_us">English (US)</string>
+    
+    <string name="settings_title">Configurações do DigitBoard</string>
+    <string name="enable_ime_step1">1. Ativar DigitBoard nas Configurações</string>
+    <string name="select_ime_step2">2. Selecionar como Teclado Padrão</string>
+    <string name="test_ime_step3">3. Testar Digitação</string>
+    
+    <string name="theme_neumorphism">Neumorphism Soft UI</string>
+    <string name="theme_amoled">Escuro AMOLED</string>
+    <string name="theme_light">Claro / Branco</string>
+    <string name="theme_rgb">RGB Animado (Chroma)</string>
+
+    <string name="pref_haptic">Feedback Tátil (Vibração)</string>
+    <string name="pref_sound">Som ao Tocar</string>
+    <string name="pref_number_row">Linha Numérica Superior</string>
+    <string name="pref_suggestions">Sugestões de Palavras</string>
+</resources>

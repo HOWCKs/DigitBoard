@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Neumorphic Theme Colors (Soft UI) -->
+    <color name="neu_bg">#e0e5ec</color>
+    <color name="neu_shadow_dark">#bec3c9</color>
+    <color name="neu_shadow_light">#ffffff</color>
+    <color name="neu_accent">#4d6bfe</color>
+    <color name="neu_accent_dark">#3b59e6</color>
+    <color name="neu_text_primary">#2d3436</color>
+    <color name="neu_text_muted">#636e72</color>
+
+    <!-- AMOLED Theme Colors -->
+    <color name="amoled_bg">#000000</color>
+    <color name="amoled_key_bg">#121212</color>
+    <color name="amoled_key_pressed">#252525</color>
+    <color name="amoled_text">#ffffff</color>
+
+    <!-- Light Theme Colors -->
+    <color name="light_bg">#f0f3f8</color>
+    <color name="light_key_bg">#ffffff</color>
+    <color name="light_key_pressed">#eef2f8</color>
+    <color name="light_text">#212529</color>
+
+    <!-- RGB Chroma Colors -->
+    <color name="rgb_bg">#0b0c10</color>
+    <color name="rgb_key_bg">#1f2833</color>
+    <color name="rgb_cyan">#66fcf1</color>
+    <color name="rgb_pink">#ff007f</color>
+</resources>
