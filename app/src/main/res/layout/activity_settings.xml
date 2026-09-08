@@ -69,7 +69,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <Button
+            <android.widget.Button
                 android:id="@+id/btn_enable_ime"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
@@ -79,7 +79,7 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <Button
+            <android.widget.Button
                 android:id="@+id/btn_select_ime"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
