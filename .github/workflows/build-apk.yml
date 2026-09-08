@@ -1,50 +1,114 @@
-      - name: Organize APK Artifacts
-        run: |
-          mkdir -p apk_outputs
-          find . -name "*.apk" -not -path "*/apk_outputs/*" -exec cp -v {} apk_outputs/ \;
-          ls -la apk_outputs/
+name: Build DigitBoard APK
 
-      - name: Upload APK Artifacts
-        uses: actions/upload-artifact@v4
+on:
+  push:
+    branches:
+      - main
+      - 'arena/**'
+    paths-ignore:
+      - '**.md'
+      - 'preview/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & Package Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          name: DigitBoard-APKs
-          path: apk_outputs/**     # <--- O segredo do v4 é usar /** para incluir todos os arquivos da pasta
+          distribution: temurin
+          java-version: '17'
 
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages (platform 34 / build-tools 34.0.0)
         run: |
-          TAG_NAME="v1.0.0-build-${{ github.run_number }}"
-          git tag -f "$TAG_NAME" || true
-          git push origin "$TAG_NAME" -f || true
-          gh release create "$TAG_NAME" apk_outputs/*.apk \
-            --title "DigitBoard Virtual Keyboard $TAG_NAME" \
-            --notes "Compilação automática de APK realizada com sucesso via GitHub Actions CI/CD."        run: gradle :app:assembleDebug --stacktrace
-        continue-on-error: true
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(command -v sdkmanager || true)"
+          fi
+          if [ -n "$SDKMANAGER" ] && [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+            "$SDKMANAGER" --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" > /dev/null || true
+          else
+            echo "sdkmanager not found - using preinstalled SDK packages"
+          fi
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" || true
+          ls "$ANDROID_HOME/build-tools" || true
+
+      - name: Grant execute permission to Gradle Wrapper
+        run: chmod +x ./gradlew
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace --no-daemon
 
       - name: Build Release APK
-        run: gradle :app:assembleRelease --stacktrace || echo "Release build step finished"
-        continue-on-error: true
+        run: ./gradlew :app:assembleRelease --stacktrace --no-daemon
 
-      - name: Organize APK Artifacts
+      - name: Collect APKs
         run: |
+          set -euo pipefail
           mkdir -p apk_outputs
-          find . -name "*.apk" -not -path "*/apk_outputs/*" -exec cp -v {} apk_outputs/ \; || true
-          ls -la apk_outputs/
+          VERSION="$(sed -n 's/.*versionName[[:space:]]*"\([^"]*\)".*/\1/p' app/build.gradle | head -1)"
+          echo "Version name: $VERSION"
+          echo "--- APKs produced by Gradle ---"
+          find app/build/outputs/apk -type f -name '*.apk' -print | sort
+          cp app/build/outputs/apk/debug/app-debug.apk "apk_outputs/DigitBoard-${VERSION}-debug.apk"
+          RELEASE_APK="$(find app/build/outputs/apk/release -type f -name '*.apk' | head -1)"
+          cp "$RELEASE_APK" "apk_outputs/DigitBoard-${VERSION}-release-unsigned.apk"
+          echo "--- apk_outputs ---"
+          ls -la apk_outputs
+
+      - name: Verify APK outputs
+        run: |
+          set -euo pipefail
+          test -s apk_outputs/*-debug.apk || { echo "::error::Debug APK is missing or empty"; exit 1; }
+          test -s apk_outputs/*-release-unsigned.apk || { echo "::error::Release APK is missing or empty"; exit 1; }
+          echo "Both APKs were generated successfully."
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: DigitBoard-APKs
-          path: apk_outputs/
+          path: apk_outputs/*
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Create GitHub Release
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           TAG_NAME="v1.0.0-build-${{ github.run_number }}"
-          git tag -f "$TAG_NAME" || true
-          git push origin "$TAG_NAME" -f || true
-          gh release create "$TAG_NAME" apk_outputs/* \
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if gh release view "$TAG_NAME" > /dev/null 2>&1; then
+            gh release delete "$TAG_NAME" --yes --cleanup-tag
+          fi
+          git tag -f "$TAG_NAME"
+          git push origin "$TAG_NAME" -f
+          gh release create "$TAG_NAME" apk_outputs/*.apk \
             --title "DigitBoard Virtual Keyboard $TAG_NAME" \
-            --notes "Compilação automática de APK realizada com sucesso via GitHub Actions CI/CD." || echo "Release step finished"
+            --notes "Compilacao automatica do APK via GitHub Actions CI/CD. Build: ${{ github.run_number }} (commit ${{ github.sha }})."
