@@ -1,0 +1,19 @@
+# Android / Gradle
+.gradle/
+build/
+app/build/
+*.apk
+*.aar
+local.properties
+.idea/
+.d8/
+*.iml
+.navigation/
+captures/
+.externalNativeBuild
+.cxx/
+
+# Node / Web Preview
+node_modules/
+dist/
+.DS_Store

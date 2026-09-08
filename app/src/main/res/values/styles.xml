@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base App Theme (Neumorphic Soft UI) -->
+    <style name="Theme.DigitBoard.Neumorphic" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/neu_accent</item>
+        <item name="colorPrimaryVariant">@color/neu_accent_dark</item>
+        <item name="colorOnPrimary">@color/neu_shadow_light</item>
+        <item name="android:windowBackground">@color/neu_bg</item>
+        <item name="android:textColorPrimary">@color/neu_text_primary</item>
+    </style>
+</resources>
